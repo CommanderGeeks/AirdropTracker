@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yaffa Wallet Tracker</title>
+    <title>Yaffa Wallet Tracker - Enhanced</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         .spinner {
             border: 2px solid #f3f3f3;
@@ -19,24 +20,66 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .profit-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .activity-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .performance-card {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-active { background-color: #d1fae5; color: #065f46; }
+        .status-external { background-color: #fef3c7; color: #92400e; }
+        .status-multi { background-color: #ddd6fe; color: #5b21b6; }
+        .generation-badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
     </style>
 </head>
-<body class="bg-gray-100" x-data="walletTracker()">
+<body class="bg-gray-50" x-data="enhancedWalletTracker()">
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-4">Yaffa Wallet Tracker</h1>
-            <p class="text-gray-600">Track token distribution and profits from mother wallets through their descendants</p>
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-800 mb-2">Yaffa Wallet Tracker</h1>
+                    <p class="text-gray-600">Enhanced tracking of token distribution and multi-lineage relationships</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500" x-text="'Last updated: ' + new Date().toLocaleTimeString()"></div>
+                    <div x-show="crawlStatus && crawlStatus.is_crawling" class="flex items-center text-green-600 mt-2">
+                        <div class="spinner mr-2"></div>
+                        <span class="text-sm font-medium">Crawling Active</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Setup Section -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Wallet Management</h2>
+                <h2 class="text-2xl font-semibold">Wallet Management</h2>
                 <button 
                     x-show="crawlStarted"
                     @click="resetForNewSearch()"
-                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm">
+                    class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-all">
                     Add More Wallets
                 </button>
             </div>
@@ -48,129 +91,256 @@
                     </label>
                     <textarea 
                         x-model="walletAddresses" 
-                        class="w-full h-32 p-3 border border-gray-300 rounded-md resize-none"
+                        class="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter wallet addresses, one per line..."></textarea>
                 </div>
                 <button 
                     @click="startCrawling()"
                     :disabled="!walletAddresses.trim() || isLoading"
-                    class="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-md flex items-center">
+                    class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-8 py-3 rounded-lg flex items-center font-medium transition-all">
                     <div x-show="isLoading" class="spinner mr-2"></div>
-                    <span x-text="isLoading ? 'Starting...' : 'Start Crawling'"></span>
+                    <span x-text="isLoading ? 'Starting Crawl...' : 'Start Enhanced Crawling'"></span>
                 </button>
                 
-                <div x-show="crawlStarted" class="mt-4 p-3 bg-blue-50 rounded-md">
+                <div x-show="crawlStarted" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <p class="text-sm text-blue-700">
-                        ✅ Crawling started! You can add more wallet addresses above while the current ones are being processed.
+                        ✅ Enhanced crawling started! Multi-lineage tracking and comprehensive analysis in progress.
                     </p>
                 </div>
             </div>
             
             <div x-show="crawlStarted && !showAddWallets" class="text-center">
-                <p class="text-gray-600 mb-4">Wallet tracking is active. You can add more wallets or view current results below.</p>
+                <p class="text-gray-600 mb-4">Enhanced wallet tracking is active with multi-lineage support.</p>
                 <button 
                     @click="showAddWallets = true"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md">
+                    class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2 rounded-lg font-medium">
                     Add More Wallets
                 </button>
             </div>
         </div>
 
-        <!-- Summary Dashboard -->
+        <!-- Enhanced Summary Dashboard -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" x-show="summary">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Mother Wallets</h3>
-                <p class="text-2xl font-bold text-gray-900" x-text="summary.mother_wallets"></p>
+            <!-- Basic Metrics -->
+            <div class="metric-card rounded-xl shadow-lg p-6 text-white">
+                <h3 class="text-sm font-medium uppercase tracking-wide opacity-90">Mother Wallets</h3>
+                <p class="text-3xl font-bold" x-text="summary.mother_wallets"></p>
+                <div class="text-sm opacity-75 mt-1">
+                    <span x-text="summary.crawl_coverage + '% crawled'"></span>
+                </div>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Wallets</h3>
-                <p class="text-2xl font-bold text-gray-900">
+            
+            <div class="activity-card rounded-xl shadow-lg p-6 text-white">
+                <h3 class="text-sm font-medium uppercase tracking-wide opacity-90">Wallet Network</h3>
+                <p class="text-3xl font-bold">
                     <span x-text="summary.active_wallets"></span> / <span x-text="summary.total_wallets"></span>
                 </p>
-                <p class="text-xs text-gray-500">Active / Total</p>
+                <div class="text-sm opacity-75 mt-1">
+                    <span x-text="summary.external_wallets + ' external'"></span> | 
+                    <span x-text="summary.multi_lineage_wallets + ' multi-lineage'"></span>
+                </div>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">YAFFA Held</h3>
-                <p class="text-2xl font-bold text-green-600" x-text="formatNumber(summary.total_yaffa_held)"></p>
+            
+            <div class="performance-card rounded-xl shadow-lg p-6 text-white">
+                <h3 class="text-sm font-medium uppercase tracking-wide opacity-90">YAFFA Holdings</h3>
+                <p class="text-3xl font-bold" x-text="formatNumber(summary.total_yaffa_held)"></p>
+                <div class="text-sm opacity-75 mt-1">
+                    <span x-text="formatNumber(summary.total_yaffa_sold) + ' sold'"></span> | 
+                    <span x-text="formatNumber(summary.total_yaffa_bought) + ' bought'"></span>
+                </div>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">SOL Profit</h3>
-                <p class="text-2xl font-bold text-blue-600" x-text="formatNumber(summary.total_sol_profit)"></p>
+            
+            <div class="profit-card rounded-xl shadow-lg p-6 text-white">
+                <h3 class="text-sm font-medium uppercase tracking-wide opacity-90">SOL Performance</h3>
+                <p class="text-3xl font-bold" x-text="formatNumber(summary.net_sol_profit)"></p>
+                <div class="text-sm opacity-75 mt-1">
+                    <span x-text="formatNumber(summary.total_sol_profit) + ' earned'"></span> | 
+                    <span x-text="formatNumber(summary.total_sol_spent) + ' spent'"></span>
+                </div>
             </div>
         </div>
 
-        <!-- Crawl Status -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8" x-show="crawlStatus">
-            <h2 class="text-xl font-semibold mb-4">Crawling Progress</h2>
-            <div class="mb-4">
+        <!-- Enhanced Transaction Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" x-show="summary">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Transaction Analysis</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Transactions</span>
+                        <span class="font-semibold" x-text="summary.total_transactions"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Lineage Transfers</span>
+                        <span class="font-semibold text-blue-600" x-text="summary.lineage_transactions"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">External Transfers</span>
+                        <span class="font-semibold text-orange-600" x-text="summary.external_transactions"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Trading Activity</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Trades</span>
+                        <span class="font-semibold" x-text="summary.total_trades"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Buy Orders</span>
+                        <span class="font-semibold text-green-600" x-text="summary.buy_trades"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Sell Orders</span>
+                        <span class="font-semibold text-red-600" x-text="summary.sell_trades"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Network Health</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Active Ratio</span>
+                        <span class="font-semibold text-green-600" x-text="((summary.active_wallets / summary.total_wallets) * 100).toFixed(1) + '%'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Avg per Mother</span>
+                        <span class="font-semibold" x-text="(summary.total_wallets / summary.mother_wallets).toFixed(1)"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Crawl Progress</span>
+                        <span class="font-semibold text-blue-600" x-text="summary.crawl_coverage + '%'"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Crawl Status -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8" x-show="crawlStatus">
+            <h2 class="text-xl font-semibold mb-4">Enhanced Crawling Progress</h2>
+            <div class="mb-6">
                 <div class="flex justify-between text-sm text-gray-600 mb-2">
                     <span>Progress</span>
                     <span x-text="`${crawlStatus.completed} / ${crawlStatus.total_wallets} wallets`"></span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500" 
                          :style="`width: ${crawlStatus.progress_percentage}%`"></div>
                 </div>
             </div>
-            <div class="grid grid-cols-3 gap-4 text-center">
-                <div>
-                    <p class="text-lg font-semibold text-green-600" x-text="crawlStatus.completed"></p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-green-600" x-text="crawlStatus.completed"></p>
                     <p class="text-sm text-gray-500">Completed</p>
                 </div>
-                <div>
-                    <p class="text-lg font-semibold text-yellow-600" x-text="crawlStatus.in_progress"></p>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-yellow-600" x-text="crawlStatus.in_progress"></p>
                     <p class="text-sm text-gray-500">In Progress</p>
                 </div>
-                <div>
-                    <p class="text-lg font-semibold text-red-600" x-text="crawlStatus.errors"></p>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-gray-600" x-text="crawlStatus.pending"></p>
+                    <p class="text-sm text-gray-500">Pending</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-red-600" x-text="crawlStatus.errors"></p>
                     <p class="text-sm text-gray-500">Errors</p>
+                </div>
+            </div>
+            
+            <div x-show="crawlStatus.recent_errors && crawlStatus.recent_errors.length > 0" class="mt-4">
+                <h4 class="font-medium text-gray-700 mb-2">Recent Errors:</h4>
+                <div class="space-y-2">
+                    <template x-for="error in crawlStatus.recent_errors" :key="error.wallet">
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-red-800" x-text="error.wallet"></p>
+                                    <p class="text-sm text-red-600" x-text="error.error"></p>
+                                </div>
+                                <span class="text-xs text-red-500" x-text="new Date(error.updated_at).toLocaleTimeString()"></span>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
 
-        <!-- Mother Wallets Table -->
-        <div class="bg-white rounded-lg shadow-md p-6" x-show="motherWallets.length > 0">
+        <!-- Enhanced Mother Wallets Table -->
+        <div class="bg-white rounded-xl shadow-lg p-6" x-show="motherWallets.length > 0">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Mother Wallets</h2>
-                <button 
-                    @click="refreshData()"
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm">
-                    Refresh
-                </button>
+                <h2 class="text-2xl font-semibold">Enhanced Mother Wallet Analysis</h2>
+                <div class="flex space-x-2">
+                    <button 
+                        @click="refreshData()"
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Refresh Data
+                    </button>
+                    <button 
+                        @click="exportAllData()"
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Export All
+                    </button>
+                </div>
             </div>
             
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">YAFFA Held</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SOL Profit</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wallet</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Network</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Depth</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">YAFFA Held</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SOL Profit</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <template x-for="wallet in motherWallets" :key="wallet.id">
-                            <tr class="hover:bg-gray-50">
+                            <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900" x-text="wallet.address.substring(0, 8) + '...'"></div>
-                                    <div class="text-sm text-gray-500" x-text="wallet.label"></div>
+                                    <div class="flex items-center">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 font-mono" x-text="wallet.address.substring(0, 12) + '...'"></div>
+                                            <div class="text-sm text-gray-500" x-text="wallet.label"></div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
-                                        <span x-text="wallet.active_descendants"></span> / <span x-text="wallet.total_descendants"></span>
+                                        <span class="font-semibold" x-text="wallet.active_descendants"></span> / <span x-text="wallet.total_descendants"></span>
                                     </div>
-                                    <div class="text-xs text-gray-500">Active / Total</div>
+                                    <div class="flex space-x-1 mt-1">
+                                        <span x-show="wallet.external_wallets > 0" class="status-badge status-external" x-text="wallet.external_wallets + ' ext'"></span>
+                                        <span x-show="wallet.multi_lineage_connections > 0" class="status-badge status-multi" x-text="wallet.multi_lineage_connections + ' multi'"></span>
+                                    </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="wallet.max_generation + 1"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium" x-text="formatNumber(wallet.total_yaffa_current)"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium" x-text="formatNumber(wallet.total_sol_profit)"></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="generation-badge" x-text="wallet.generation_depth + ' gen'"></span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-green-600" x-text="formatNumber(wallet.total_yaffa_current)"></div>
+                                    <div class="text-xs text-gray-500" x-text="formatNumber(wallet.total_yaffa_sold) + ' sold'"></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-blue-600" x-text="formatNumber(wallet.total_sol_profit)"></div>
+                                    <div class="text-xs text-gray-500" x-text="wallet.total_trades + ' trades'"></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium" x-text="formatNumber(wallet.profit_per_wallet) + ' SOL/wallet'"></div>
+                                    <div class="text-xs text-gray-500" x-text="wallet.active_wallet_ratio + '% active'"></div>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                                     <button 
                                         @click="viewWalletDetails(wallet.id)"
-                                        class="text-blue-600 hover:text-blue-800">View Details</button>
+                                        class="text-blue-600 hover:text-blue-800 font-medium">Details</button>
                                     <button 
                                         @click="exportWalletData(wallet.id)"
-                                        class="text-green-600 hover:text-green-800">Export</button>
+                                        class="text-green-600 hover:text-green-800 font-medium">Export</button>
                                 </td>
                             </tr>
                         </template>
@@ -179,12 +349,12 @@
             </div>
         </div>
 
-        <!-- Wallet Details Modal -->
+        <!-- Enhanced Wallet Details Modal -->
         <div x-show="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.away="closeModal()">
-            <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">
-                        Wallet Details: <span x-text="selectedWallet ? selectedWallet.address.substring(0, 16) + '...' : ''"></span>
+            <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-7xl shadow-lg rounded-xl bg-white">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">
+                        Enhanced Wallet Analysis: <span class="font-mono text-blue-600" x-text="selectedWallet ? selectedWallet.address.substring(0, 16) + '...' : ''"></span>
                     </h3>
                     <button @click="closeModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,31 +363,91 @@
                     </button>
                 </div>
                 
+                <!-- Enhanced Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6" x-show="walletDetails">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+                        <h4 class="text-sm opacity-90">Total Descendants</h4>
+                        <p class="text-2xl font-bold" x-text="walletDetails.descendants.length"></p>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+                        <h4 class="text-sm opacity-90">Active Wallets</h4>
+                        <p class="text-2xl font-bold" x-text="walletDetails.descendants.filter(d => d.is_active).length"></p>
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+                        <h4 class="text-sm opacity-90">Multi-Lineage</h4>
+                        <p class="text-2xl font-bold" x-text="walletDetails.descendants.filter(d => d.lineage_connections > 0).length"></p>
+                    </div>
+                    <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-4 text-white">
+                        <h4 class="text-sm opacity-90">External Wallets</h4>
+                        <p class="text-2xl font-bold" x-text="walletDetails.descendants.filter(d => d.is_external).length"></p>
+                    </div>
+                </div>
+                
                 <div x-show="walletDetails" class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Wallet</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gen</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Balance</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sold</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">SOL Profit</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Children</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trading</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">SOL P&L</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Network</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Performance</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="descendant in walletDetails.descendants" :key="descendant.id">
-                                <tr class="hover:bg-gray-50" :class="{'bg-green-50': descendant.is_active}">
-                                    <td class="px-4 py-3 text-sm font-mono" x-text="descendant.address.substring(0, 12) + '...'"></td>
-                                    <td class="px-4 py-3 text-sm" x-text="descendant.generation"></td>
-                                    <td class="px-4 py-3 text-sm text-green-600" x-text="formatNumber(descendant.current_yaffa_balance)"></td>
-                                    <td class="px-4 py-3 text-sm text-red-600" x-text="formatNumber(descendant.total_yaffa_sold)"></td>
-                                    <td class="px-4 py-3 text-sm text-blue-600" x-text="formatNumber(descendant.total_sol_received)"></td>
-                                    <td class="px-4 py-3 text-sm" x-text="descendant.children_count"></td>
+                                <tr class="hover:bg-gray-50" :class="{'bg-green-50': descendant.is_active, 'bg-orange-50': descendant.is_external, 'bg-purple-50': descendant.lineage_connections > 0}">
                                     <td class="px-4 py-3 text-sm">
-                                        <span x-show="descendant.is_active" class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
-                                        <span x-show="!descendant.is_active" class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Empty</span>
+                                        <div class="font-mono font-medium" x-text="descendant.address.substring(0, 12) + '...'"></div>
+                                        <div class="flex space-x-1 mt-1">
+                                            <span x-show="descendant.is_active" class="status-badge status-active">Active</span>
+                                            <span x-show="descendant.is_external" class="status-badge status-external">External</span>
+                                            <span x-show="descendant.lineage_connections > 0" class="status-badge status-multi" x-text="descendant.lineage_connections + ' lineages'"></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-center">
+                                        <span class="generation-badge" x-text="descendant.generation"></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <div class="space-y-1">
+                                            <div class="text-xs text-gray-500">
+                                                <span x-text="descendant.buy_trades + ' buys'"></span> | 
+                                                <span x-text="descendant.sell_trades + ' sells'"></span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <div class="font-semibold text-green-600" x-text="formatNumber(descendant.current_yaffa_balance)"></div>
+                                        <div class="text-xs text-gray-500" x-text="'Net: ' + formatNumber(descendant.net_yaffa_balance)"></div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <div class="space-y-1">
+                                            <div class="text-green-600" x-text="'↑ ' + formatNumber(descendant.total_yaffa_bought)"></div>
+                                            <div class="text-red-600" x-text="'↓ ' + formatNumber(descendant.total_yaffa_sold)"></div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <div class="font-semibold" :class="descendant.net_sol_balance >= 0 ? 'text-green-600' : 'text-red-600'" x-text="formatNumber(descendant.net_sol_balance)"></div>
+                                        <div class="text-xs text-gray-500">
+                                            <span class="text-green-600" x-text="'+' + formatNumber(descendant.total_sol_received)"></span> | 
+                                            <span class="text-red-600" x-text="'-' + formatNumber(descendant.total_sol_spent)"></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-center">
+                                        <div class="font-medium" x-text="descendant.children_count"></div>
+                                        <div class="text-xs text-gray-500">children</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <div class="space-y-1">
+                                            <div class="font-medium" x-text="descendant.performance_score.toFixed(4)"></div>
+                                            <div class="text-xs text-gray-500">
+                                                <span x-show="descendant.avg_buy_price > 0" x-text="'Avg Buy: ' + descendant.avg_buy_price.toFixed(6)"></span>
+                                                <span x-show="descendant.avg_sell_price > 0" x-text="'Avg Sell: ' + descendant.avg_sell_price.toFixed(6)"></span>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             </template>
@@ -229,7 +459,7 @@
     </div>
 
     <script>
-        function walletTracker() {
+        function enhancedWalletTracker() {
             return {
                 walletAddresses: '',
                 isLoading: false,
@@ -241,6 +471,7 @@
                 showModal: false,
                 selectedWallet: null,
                 walletDetails: null,
+                statusInterval: null,
 
                 async startCrawling() {
                     if (!this.walletAddresses.trim()) return;
@@ -260,9 +491,9 @@
                         if (response.ok) {
                             this.crawlStarted = true;
                             this.showAddWallets = false;
-                            this.walletAddresses = ''; // Clear the input
+                            this.walletAddresses = '';
                             this.startStatusPolling();
-                            alert('Crawling started successfully!');
+                            alert('Enhanced crawling started successfully! Multi-lineage tracking enabled.');
                         } else {
                             alert('Error: ' + result.detail);
                         }
@@ -288,7 +519,7 @@
                             this.summary = await response.json();
                         }
                     } catch (error) {
-                        console.error('Error loading summary:', error);
+                        console.error('Error loading enhanced summary:', error);
                     }
                 },
 
@@ -315,12 +546,15 @@
                 },
 
                 startStatusPolling() {
+                    if (this.statusInterval) clearInterval(this.statusInterval);
+                    
                     this.statusInterval = setInterval(async () => {
                         await this.refreshData();
                         
                         // Stop polling if crawling is complete
-                        if (this.crawlStatus && this.crawlStatus.progress_percentage >= 100) {
+                        if (this.crawlStatus && this.crawlStatus.progress_percentage >= 100 && !this.crawlStatus.is_crawling) {
                             clearInterval(this.statusInterval);
+                            this.statusInterval = null;
                         }
                     }, 5000); // Poll every 5 seconds
                 },
@@ -334,7 +568,7 @@
                             this.showModal = true;
                         }
                     } catch (error) {
-                        alert('Error loading wallet details: ' + error.message);
+                        alert('Error loading enhanced wallet details: ' + error.message);
                     }
                 },
 
@@ -347,12 +581,38 @@
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a');
                             a.href = url;
-                            a.download = `wallet_${data.mother_wallet.address.substring(0, 8)}_export.json`;
+                            a.download = `enhanced_wallet_${data.mother_wallet.address.substring(0, 8)}_export.json`;
                             a.click();
                             URL.revokeObjectURL(url);
                         }
                     } catch (error) {
-                        alert('Error exporting data: ' + error.message);
+                        alert('Error exporting enhanced data: ' + error.message);
+                    }
+                },
+
+                async exportAllData() {
+                    try {
+                        const promises = this.motherWallets.map(wallet => 
+                            fetch(`/api/export/${wallet.id}`).then(r => r.json())
+                        );
+                        const allData = await Promise.all(promises);
+                        
+                        const combinedExport = {
+                            export_timestamp: new Date().toISOString(),
+                            export_type: 'enhanced_all_wallets',
+                            summary: this.summary,
+                            mother_wallets: allData
+                        };
+                        
+                        const blob = new Blob([JSON.stringify(combinedExport, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `enhanced_all_wallets_${new Date().toISOString().split('T')[0]}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    } catch (error) {
+                        alert('Error exporting all data: ' + error.message);
                     }
                 },
 
@@ -369,26 +629,43 @@
 
                 formatNumber(num) {
                     if (num === null || num === undefined) return '0';
+                    if (Math.abs(num) < 0.0001 && num !== 0) {
+                        return num.toExponential(2);
+                    }
                     return new Intl.NumberFormat('en-US', {
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 4
                     }).format(num);
                 },
 
-                // Initialize data on page load
+                // Initialize enhanced data on page load
                 async init() {
                     await this.refreshData();
                     
                     // If we have data, assume crawling has been done
                     if (this.motherWallets.length > 0) {
                         this.crawlStarted = true;
+                        
+                        // Start polling if crawling is still active
+                        if (this.crawlStatus && this.crawlStatus.is_crawling) {
+                            this.startStatusPolling();
+                        }
+                    }
+                },
+
+                // Cleanup on page unload
+                destroy() {
+                    if (this.statusInterval) {
+                        clearInterval(this.statusInterval);
                     }
                 }
             }
         }
+
+        // Auto-cleanup polling when page is unloaded
+        window.addEventListener('beforeunload', function() {
+            // Alpine.js will handle cleanup automatically
+        });
     </script>
 </body>
-</html>-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wallet</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descendants</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Generations</th>
-                            <th class="px
+</html>
