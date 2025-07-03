@@ -1,0 +1,238 @@
+# Airdrop Tracker - .gitignore
+
+
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+
+# Supabase credentials
+supabase/
+.supabase/
+
+# API keys and sensitive config
+config/secrets.py
+config/production.py
+**/secrets.json
+**/credentials.json
+api_keys.txt
+wallet_addresses.txt
+
+# Database credentials and connection strings
+database/credentials.py
+database/secrets.py
+
+# =============================================================================
+# PYTHON ENVIRONMENT
+# =============================================================================
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+.ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# =============================================================================
+# DEVELOPMENT TOOLS
+# =============================================================================
+
+# IDEs
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# =============================================================================
+# LOGS AND TEMPORARY FILES
+# =============================================================================
+
+# Application logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+.tmp/
+temp/
+tmp/
+
+# =============================================================================
+# DATA AND OUTPUT FILES
+# =============================================================================
+
+# Crawler output and data files
+data/
+output/
+exports/
+crawl_results/
+wallet_data/
+*.csv
+*.xlsx
+*.json
+!package.json
+!requirements.txt
+
+# Screenshots and images (except documentation)
+screenshots/
+images/
+*.png
+*.jpg
+*.jpeg
+*.gif
+!docs/**/*.png
+!readme_images/**/*.png
+
+# =============================================================================
+# FRONTEND SPECIFIC
+# =============================================================================
+
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend build
+frontend/dist/
+frontend/build/
+.next/
+out/
+
+# CSS preprocessing
+.sass-cache/
+*.css.map
+
+# =============================================================================
+# SYSTEM FILES
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# WHAT WILL BE INCLUDED (PUBLIC CODE)
+# =============================================================================
+
+# ✅ All Python source code
+# ✅ API endpoints and routing
+# ✅ Crawler logic and algorithms  
+# ✅ Database models and migrations
+# ✅ Frontend templates and static files
+# ✅ Configuration templates (without secrets)
+# ✅ Documentation and README files
+# ✅ Requirements and dependencies
+
+# =============================================================================
+# CONFIGURATION TEMPLATES (SAFE TO INCLUDE)
+# =============================================================================
+
+# Include example/template configs (without real secrets)
+!config/settings.example.py
+!config/template.env
+!database/connection.example.py
+!.env.example
