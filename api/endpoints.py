@@ -68,19 +68,19 @@ async def get_summary(supabase = Depends(get_supabase)):
             wallet_data = []
         
         total_wallets = len(wallet_data)
-        active_wallets = len([w for w in wallet_data if w.get('current_yaffa_balance', 0) > 0])
+        active_wallets = len([w for w in wallet_data if (w.get('current_yaffa_balance') or 0) > 0])
         
         # Use safe field access with defaults and handle None values
         external_wallets = len([w for w in wallet_data if w.get('is_external', False)])
         multi_lineage_wallets = len([w for w in wallet_data if (w.get('lineage_count') or 1) > 1])
         
-        # Enhanced token stats with safe field access
-        total_yaffa_held = sum(w.get('current_yaffa_balance', 0) for w in wallet_data)
-        total_yaffa_sold = sum(w.get('total_yaffa_sold', 0) for w in wallet_data)
-        total_yaffa_bought = sum(w.get('total_yaffa_bought', 0) for w in wallet_data)
-        total_sol_profit = sum(w.get('total_sol_received', 0) for w in wallet_data)
-        total_sol_spent = sum(w.get('total_sol_spent', 0) for w in wallet_data)
-        net_sol_profit = sum(w.get('net_sol_balance', 0) for w in wallet_data)
+        # Enhanced token stats with safe field access and None handling
+        total_yaffa_held = sum((w.get('current_yaffa_balance') or 0) for w in wallet_data)
+        total_yaffa_sold = sum((w.get('total_yaffa_sold') or 0) for w in wallet_data)
+        total_yaffa_bought = sum((w.get('total_yaffa_bought') or 0) for w in wallet_data)
+        total_sol_profit = sum((w.get('total_sol_received') or 0) for w in wallet_data)
+        total_sol_spent = sum((w.get('total_sol_spent') or 0) for w in wallet_data)
+        net_sol_profit = sum((w.get('net_sol_balance') or 0) for w in wallet_data)
         
         # Transaction and trade stats with error handling
         try:
